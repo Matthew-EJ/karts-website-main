@@ -17,9 +17,9 @@ COPY . .
 
 # Process Compile (Now using the current directory as source)
 # Create a build directory, change into it, run CMake to configure the project, then compile it
-RUN mkdir -p build && cd build && \
-    cmake .. && \
-    make
+RUN mkdir -p build
+WORKDIR /app/build
+RUN cmake .. && make
 
 # --- TAHAP 2: RUNTIME ---
 # Use a slim version of Debian Bookworm to run the compiled application without compiler bulk
