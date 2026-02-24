@@ -1,0 +1,41 @@
+/* Import specific font weights from standard Google Fonts repositories */
+/* Inter is used for body text, while Outfit is used for Headings globally */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap');
+
+/* Main Tailwind base directives encompassing all layout/utility resets */
+@import "tailwindcss";
+
+/* Target global HTML elements across the entire website */
+@layer base {
+  body {
+    /* Apply base background color, text color, and anti-aliasing text smoothing */
+    @apply antialiased text-gray-950 bg-[#fafafa];
+    font-family: 'Inter', sans-serif;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+  }
+
+  /* Automatically map 'Outfit' font family to all semantic Title HTML elements */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-black tracking-tighter;
+    font-family: 'Outfit', sans-serif;
+  }
+}
+
+/* Global Utility Classes: Creates a custom class used frequently when a div scrolls but shouldn't show the scrollbar styling UI */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+  /* Targets webkit browsers like Chrome/Safari */
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  /* Targets Internet Explorer / Edge */
+  scrollbar-width: none;
+  /* Targets Firefox */
+}
