@@ -18,6 +18,16 @@
 // Make it easier to refer to nlohmann::json
 using json = nlohmann::json;
 
+// --- HELPER FUNCTION: Anti-Crash Converter ---
+int safe_stoi(const std::string& str, int default_val = 0) {
+    try {
+        if (str.empty()) return default_val;
+        return std::stoi(str);
+    } catch (...) {
+        return default_val; // Jika bukan angka, balikkan angka default (0)
+    }
+}
+
 // --- DATABASE CONFIG ---
 // Global constants for connecting to the remote Aiven MySQL database
 const char* DB_HOST = "mysql-21935f8c-kartsweb-smukie.g.aivencloud.com";
@@ -139,7 +149,7 @@ int main() {
                 // Fetch each row and map columns to a JSON object
                 while ((row = mysql_fetch_row(result))) {
                     j_list.push_back({
-                        {"id", row[0] ? std::stoi(row[0]) : 0},
+                        {"id", row[0] ? safe_stoi(row[0]) : 0},
                         {"announcements", row[1] ? row[1] : ""},
                         {"description", row[2] ? row[2] : ""},
                         {"date", row[3] ? row[3] : ""},
@@ -180,7 +190,7 @@ int main() {
                 // Populate JSON response payload dynamically
                 while ((row = mysql_fetch_row(result))) {
                     j_list.push_back({
-                        {"id", row[0] ? std::stoi(row[0]) : 0},
+                        {"id", row[0] ? safe_stoi(row[0]) : 0},
                         {"name", row[1] ? row[1] : ""},
                         {"date", row[2] ? row[2] : ""},
                         {"location", row[3] ? row[3] : ""},
@@ -255,7 +265,7 @@ int main() {
     svr.Put(R"(/api/announcements/(\d+))", [](const httplib::Request& req, httplib::Response& res) {
         try {
             // Extract the announcement ID from the URL path regex match
-            int id = std::stoi(req.matches[1]);
+            int id = safe_stoi(req.matches[1]);
             // Parse updated data
             auto j = json::parse(req.body);
             MYSQL* conn = get_db_connection();
@@ -284,7 +294,7 @@ int main() {
     svr.Put(R"(/api/events/(\d+))", [](const httplib::Request& req, httplib::Response& res) {
         try {
             // Extract the numerical event ID
-            int id = std::stoi(req.matches[1]);
+            int id = safe_stoi(req.matches[1]);
             auto j = json::parse(req.body);
             MYSQL* conn = get_db_connection();
             if (!conn) { res.status = 500; return; }
@@ -309,7 +319,7 @@ int main() {
     // Removes an announcement by its ID dynamically pulled from the URL
     svr.Delete(R"(/api/announcements/(\d+))", [](const httplib::Request& req, httplib::Response& res) {
         // Extract the ID of the announcement intended for deletion
-        int id = std::stoi(req.matches[1]);
+        int id = safe_stoi(req.matches[1]);
         MYSQL* conn = get_db_connection();
         if (!conn) { res.status = 500; return; }
 
@@ -327,7 +337,7 @@ int main() {
     // Removes a specific event entry by its ID passed via the route parameter
     svr.Delete(R"(/api/events/(\d+))", [](const httplib::Request& req, httplib::Response& res) {
         // Evaluate numerical ID parameter
-        int id = std::stoi(req.matches[1]);
+        int id = safe_stoi(req.matches[1]);
         MYSQL* conn = get_db_connection();
         if (!conn) { res.status = 500; return; }
 
@@ -343,7 +353,7 @@ int main() {
 
     // Ascertain listening server port via Environment Variable or default to 8080
     const char* port_env = std::getenv("PORT");
-    int port = port_env ? std::stoi(port_env) : 8080;
+    int port = safe_stoi(port_env ? port_env : "8080", 8080);
     
     // Output success indication and listening configuration
     std::cout << "Server starting on http://0.0.0.0:" << port << std::endl;
